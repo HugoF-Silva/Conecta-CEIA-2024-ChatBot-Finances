@@ -1,0 +1,1047 @@
+{
+  "name": "FinBot copy",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-3.5-turbo-0125",
+        "options": {
+          "responseFormat": "text",
+          "temperature": 0
+        }
+      },
+      "id": "32c6fb4c-df18-408a-b04f-684cbae19348",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "64c8dafe-0dbf-4292-b7fd-5687ccbfe89c",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1980,
+        480
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2deb4788-22a1-4738-a357-68b0b99b118c",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.1,
+      "position": [
+        -760,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "name": "finance_investment_glossary",
+        "description": "Returns the raw meaning of words from a glossary on finance & investments."
+      },
+      "id": "cc68eb17-98af-4399-a4d6-664a092278b3",
+      "name": "Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1gWE3uSjHbS-mWpDKBafyQBKBSBySQDDK",
+          "mode": "list",
+          "cachedResultName": "finance-knowledge",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1gWE3uSjHbS-mWpDKBafyQBKBSBySQDDK"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "0f0b6828-c4e3-474d-a15a-34a0b74fe6f4",
+      "name": "Drive Update",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1gWE3uSjHbS-mWpDKBafyQBKBSBySQDDK",
+          "mode": "list",
+          "cachedResultName": "finance-knowledge",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1gWE3uSjHbS-mWpDKBafyQBKBSBySQDDK"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "5838f39b-bd76-4534-aba4-1ec91b7db32b",
+      "name": "Drive Upload",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bba632c-2115-4e52-90ec-e595a014be4d",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb68364e-d600-4a67-8b0f-14c4d3393f44",
+      "name": "Set File Id",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        1180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "documents",
+        "filterType": "string",
+        "filterString": "=metadata->>file_id=like.*{{ $json.file_id }}"
+      },
+      "id": "4257b1e5-ce0a-4fb4-adc5-fab69675e74a",
+      "name": "Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1180
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $node['Set File Id'].json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "id": "861ac74b-362e-4cdc-bb49-74b51445fb5f",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        920,
+        1180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "8112ae0e-c81d-4829-b4ee-a115aa45fff2",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1180
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7d461204-1290-45e2-b7b4-ff069f5ef59c",
+      "name": "text-embedding-ada-002",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        1220
+      ]
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_id",
+                "value": "={{ $('Set File Id').item.json.file_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "b1bd88fc-232d-44e3-be95-4dafec833dea",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        1360
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 750,
+        "options": {}
+      },
+      "id": "9de6bc68-ef0a-45f0-a7e9-5c154c8b101b",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        1540
+      ]
+    },
+    {
+      "parameters": {
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.headers.authorization }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "46b420de-f4fc-414b-a4cf-5728d6a3491b",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -200,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "400e3bfc-6c8b-48e6-8cb3-70c0af376902",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9d16c4d3-eb60-4dab-b01e-2d145bfc21d4",
+      "name": "If1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        20,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3285ddde-d59b-4bf4-8b7b-7597265743c3",
+      "name": "Respond with Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5ac3a968-ceb0-409b-9b75-d93b7a854baf",
+              "name": "chatInput",
+              "value": "={{ $('Webhook').item.json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "7472e45e-ee39-44e2-a6d3-3a12504e3430",
+              "name": "sessionId",
+              "value": "={{ $('Webhook').item.json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "b011c4e3-a548-4851-8fae-140de12fc88e",
+              "name": "tuneMode",
+              "value": "={{ $('Webhook').item.json.body.tuneMode }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3f75713c-d180-4e18-b212-19c4fb913cd2",
+              "name": "ragMode",
+              "value": "={{ $('Webhook').item.json.body.ragMode }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ece04bbe-0cd0-4a78-928f-5026aea9ab17",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "model": "ft:gpt-3.5-turbo-0125:ceia::AGrZMx9p",
+        "options": {
+          "responseFormat": "text",
+          "temperature": 0
+        }
+      },
+      "id": "2e359f44-e5ef-4698-9540-50716f676ce2",
+      "name": "OpenAI Chat Model - Fine Tuned",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "400e3bfc-6c8b-48e6-8cb3-70c0af376902",
+              "leftValue": "={{ $json.tuneMode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "605e5d75-9096-4994-aaa3-9bcf214275ff",
+              "leftValue": "={{ $json.ragMode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5c3f3acb-5678-4fba-92c7-27417ff5ceaa",
+      "name": "If Tune but not RAG",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "400e3bfc-6c8b-48e6-8cb3-70c0af376902",
+              "leftValue": "={{ $json.tuneMode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "605e5d75-9096-4994-aaa3-9bcf214275ff",
+              "leftValue": "={{ $json.ragMode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b45933ec-1e52-4949-92b1-dbe040264326",
+      "name": "If Tune and RAG",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        380,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "400e3bfc-6c8b-48e6-8cb3-70c0af376902",
+              "leftValue": "={{ $json.tuneMode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "605e5d75-9096-4994-aaa3-9bcf214275ff",
+              "leftValue": "={{ $json.ragMode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "180dbeaf-e1d0-45c5-ab7d-80518d8ec31b",
+      "name": "If RAG but not Tune",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ffef9043-428d-450d-921f-d324bff8ac7f",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2cba2643-bdba-4848-a099-25697d14741e",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        400
+      ],
+      "webhookId": "ffef9043-428d-450d-921f-d324bff8ac7f"
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "options": {
+          "systemMessage": "You are a friendly assistant who helps the user.\nThe user may have questions about finance or any other topic, but your assistance niche is mainly finance.\nWhenever the user sends a message on a topic, you should return insightful answer about the user message.\n\nYou mainly talk in Brazilian Portuguese (but you can also speak in other languages too if the user asks), that's because the user is mainly a person that talks in portuguese.\n\nYour name is FinBot"
+        }
+      },
+      "id": "9a76998b-c8f5-4fbd-b4cc-52b06a3b59c0",
+      "name": "Agent LLM - FinBot",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        880,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "options": {
+          "systemMessage": "You are a friendly assistant who helps the user.\nThe user may have questions about finance or any other topic, but your assistance niche is mainly finance.\nWhenever the user sends a message on a topic, you should return insightful answer about the user message.\n\nYou mainly talk in Brazilian Portuguese (but you can also speak in other languages too if the user asks), that's because the user is mainly a person that talks in portuguese.\n\nYour name is FinBot"
+        }
+      },
+      "id": "acfaf365-a682-4568-803c-1c926317d5e1",
+      "name": "FineTuned Agent LLM - FinBot",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        880,
+        -500
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a friendly assistant who helps the user.\nThe user may have questions about finance or any other topic, but your assistance niche is mainly finance.\nWhenever the user sends a message on a topic, a database returns textual data on the available information that most closely relates to the topic raised by the user.\n\nThe database only has information available on “finance glossary”, and considering that the user doesn't always send a message about finance, the information in the database that is most related to the user's message doesn't always have any relevant relation.\n\nWhen it is possible to see that the accompanying information (returned by the database) has no relevant relation to the user's message, it is possible to ignore the accompanying information and respond only to the user's message.\n\nWhen you can see that the accompanying information (returned by the database) has a relevant relationship to the user's message, you as an assistant should support the information in order to give the user a more enriched response.\n\nYou mainly talk in Brazilian Portuguese (but you can also speak in other languages too if the user asks), that's because the user is mainly a person that talks in portuguese.\n\nYour name is FinBot"
+        }
+      },
+      "id": "83705839-0881-49a9-b301-5f3b829790b9",
+      "name": "RAG Agent LLM - FinBot",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        880,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Olá! Meu nome é FinBot. Como posso te ajudar?",
+        "options": {
+          "loadPreviousSession": "notSupported"
+        }
+      },
+      "id": "5903006e-4c84-4dbe-97b8-32c39d291bc3",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        -1140
+      ],
+      "webhookId": "76fa71f5-d78a-40a8-b5bd-550cb815772e"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a friendly assistant who helps the user.\nThe user may have questions about finance or any other topic, but your assistance niche is mainly finance.\nWhenever the user sends a message on a topic, a database returns textual data on the available information that most closely relates to the topic raised by the user.\n\nThe database only has information available on “finance glossary”, and considering that the user doesn't always send a message about finance, the information in the database that is most related to the user's message doesn't always have any relevant relation.\n\nWhen it is possible to see that the accompanying information (returned by the database) has no relevant relation to the user's message, it is possible to ignore the accompanying information and respond only to the user's message.\n\nWhen you can see that the accompanying information (returned by the database) has a relevant relationship to the user's message, you as an assistant should support the information in order to give the user a more enriched response.\n\nYou mainly talk in Brazilian Portuguese (but you can also speak in other languages too if the user asks), that's because the user is mainly a person that talks in portuguese.\n\nYour name is FinBot"
+        }
+      },
+      "id": "eb5b195c-d442-4d44-877e-c4b708d91a62",
+      "name": "Public FineTuned+RAG Agent LLM - FinBot",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        880,
+        -1140
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "id": "b1f6771d-e437-48d5-ba65-7a6084aa2309",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "id": "ec91842a-abc6-4cd2-9bfd-200fc5611bb0",
+      "name": "Insert Embedding converted data",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        1180
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a friendly assistant who helps the user.\nThe user may have questions about finance or any other topic, but your assistance niche is mainly finance.\nWhenever the user sends a message on a topic, a database returns textual data on the available information that most closely relates to the topic raised by the user.\n\nThe database only has information available on “finance glossary”, and considering that the user doesn't always send a message about finance, the information in the database that is most related to the user's message doesn't always have any relevant relation.\n\nWhen it is possible to see that the accompanying information (returned by the database) has no relevant relation to the user's message, it is possible to ignore the accompanying information and respond only to the user's message.\n\nWhen you can see that the accompanying information (returned by the database) has a relevant relationship to the user's message, you as an assistant should support the information in order to give the user a more enriched response.\n\nYou mainly talk in Brazilian Portuguese (but you can also speak in other languages too if the user asks), that's because the user is mainly a person that talks in portuguese.\n\nYour name is FinBot"
+        }
+      },
+      "id": "7bc0786f-4cd2-489c-80f3-29e31f9f957e",
+      "name": "FineTuned+RAG Agent LLM - FinBot",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        880,
+        -820
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG Agent LLM - FinBot",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agent LLM - FinBot",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG Agent LLM - FinBot",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Agent LLM - FinBot",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "FineTuned Agent LLM - FinBot",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "FineTuned+RAG Agent LLM - FinBot",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Public FineTuned+RAG Agent LLM - FinBot",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG Agent LLM - FinBot",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "FineTuned+RAG Agent LLM - FinBot",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Public FineTuned+RAG Agent LLM - FinBot",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive Upload": {
+      "main": [
+        [
+          {
+            "node": "Set File Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive Update": {
+      "main": [
+        [
+          {
+            "node": "Set File Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Insert Embedding converted data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "text-embedding-ada-002": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Insert Embedding converted data",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert Embedding converted data",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond with Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File Id": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If Tune and RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model - Fine Tuned": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "FineTuned Agent LLM - FinBot",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "FineTuned+RAG Agent LLM - FinBot",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Public FineTuned+RAG Agent LLM - FinBot",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Tune but not RAG": {
+      "main": [
+        [
+          {
+            "node": "FineTuned Agent LLM - FinBot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If RAG but not Tune",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Tune and RAG": {
+      "main": [
+        [
+          {
+            "node": "FineTuned+RAG Agent LLM - FinBot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Tune but not RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If RAG but not Tune": {
+      "main": [
+        [
+          {
+            "node": "RAG Agent LLM - FinBot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent LLM - FinBot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent LLM - FinBot": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FineTuned Agent LLM - FinBot": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Agent LLM - FinBot": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Public FineTuned+RAG Agent LLM - FinBot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FineTuned+RAG Agent LLM - FinBot": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e85fc98b-dfbb-4408-8777-f0f0bdaedac2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c5d73b382a1b82076221cf5a269f10db64c136467c9e84db9d3620a3bee6df8c"
+  },
+  "id": "uJOlkAMGfq7vkMhQ",
+  "tags": []
+}
